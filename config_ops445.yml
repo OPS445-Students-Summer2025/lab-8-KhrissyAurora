@@ -1,0 +1,61 @@
+---
+- name: Configure OPS445 Linux VM
+  hosts: vmlab
+  user: student
+  become: yes
+
+  vars:
+    seneca_id: kalmodal
+    public_key_content: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCunihCwbFvKxu/SEjnHdaPwM7giiSO13EZurGV7pG+qyDUD0NXnV7ZqoYyRkGPGnBd6tfOx6w7v7nByEQoizZEQUKtk4FvYjgvNFSskPU+mZYy747UeFkorf8sPlSBMgKLbfb8sklYxhN4vImdc6wpAEUpZfh+wb1cF/5rJE23DG3mQJm8ECDbEWyRmkYm9Q6AJ7tViXGJO6qjzgvHg4MlttpIWR7ISlp3Hn54kcZD0qKo83YzGimHwuvoN3hAUGLyQ3jU49EI62sTJIQPuGvO10dNsKfZD4nxJ9ZmW2rdjL/axw7NtyxlxBI8vu2/+qBE9WDyOUkn5vW8K7GerHqn kalmodal@mtrx-node01pd.dcm.senecacollege.ca 
+
+  tasks:
+    - name: Update Apache (httpd) package to the latest version
+      yum:
+        name: httpd
+        state: latest
+
+    - name: Install Extra Packages for Enterprise Linux (EPEL) if not already installed
+      yum:
+        name: epel-release
+        state: present
+
+    - name: Remove 'tree' package
+      yum:
+        name: tree
+        state: absent
+
+    - name: Set the hostname to your Seneca ID
+      hostname:
+        name: kalmodal
+
+    - name: Create a new user with your Seneca ID and grant sudo access
+      user:
+        name: kalmodal
+        state: present
+        create_home: yes
+        groups: wheel
+        append: yes
+
+    - name: Configure the new user account for passwordless SSH
+      authorized_key:
+        user: kalmodal
+        state: present
+        key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCunihCwbFvKxu/SEjnHdaPwM7giiSO13EZ$
+
+    - name: Setup required directory structure for labs using a loop
+      file:
+        path: "/home/kalmodal/ops445/{{ item }}"
+        state: directory
+        owner: kalmodal
+        group: kalmodal
+        mode: '0755'
+      loop:
+        - lab1
+        - lab2
+        - lab3
+        - lab4
+        - lab5
+        - lab6
+        - lab7
+        - lab8
+
